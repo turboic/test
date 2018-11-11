@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.test.mapper.OrderDAO">
+  <resultMap id="BaseResultMap" type="com.example.test.model.Order">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="number" jdbcType="VARCHAR" property="number" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+  </resultMap>
+
+  <!--第一种关联方式开始-->
+  <resultMap id="orderCollection" type="com.example.test.model.Order" extends="BaseResultMap">
+      <collection property="orderDetailList" ofType="com.example.test.model.OrderDetail" column="guanlianid"><!-- 这里的column对应的是下面查询的别名，而不是表字段名 -->
+        <id column="oid" jdbcType="VARCHAR" property="id"/>
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="price" jdbcType="VARCHAR" property="price" />
+        <result column="orderid" jdbcType="VARCHAR" property="orderid" />
+    </collection>
+  </resultMap>
+  <select id="getOrder1" parameterType="java.lang.String" resultMap="orderCollection">
+		SELECT
+			t.id as guanlianid,<!--这里的别名需要与上面的对应否则查不出数据-->
+			t.number,
+			t.name,
+			o.id as oid,
+			o.content,
+			o.price,
+			o.orderid
+		FROM
+			orders t
+		LEFT JOIN orderdetail o ON t.id = o.orderid where t.id=#{id}
+	</select>
+  <!--第一种关联方式结束-->
+
+
+  <!--第二种关联方式开始-->
+  <!--建议使用这种方式一对多的-->
+  <resultMap id="orderCollection2" type="com.example.test.model.Order" extends="BaseResultMap">
+    <collection property="orderDetailList" ofType="com.example.test.model.OrderDetail" select="getOrderDetail2" column="oid">
+    </collection>
+    <collection property="addresslList" ofType="com.example.test.model.Address" select="getAddress2" column="oid">
+    </collection>
+  </resultMap>
+  <select id="getOrder2" parameterType="com.example.test.model.Order" resultMap="orderCollection2">
+		SELECT
+			t.id as oid,<!--这里的别名需要与上面的对应否则查不出数据-->
+			t.number,
+			t.name
+		FROM
+			orders t where t.id = #{id}
+	</select>
+
+  <select id="getOrderDetail2" parameterType="java.lang.String" resultType="com.example.test.model.OrderDetail">
+		select
+			o.id,
+			o.content,
+			o.price,
+			o.orderid
+			from orderdetail o
+		where o.orderid = #{oid}
+	</select>
+
+  <select id="getAddress2" parameterType="java.lang.String" resultType="com.example.test.model.Address">
+		select
+			a.id,
+			a.name,
+			a.detail,
+			a.accountid
+			from address a
+		where a.accountid = #{oid}
+	</select>
+  <!--第二种关联方式结束-->
+</mapper>

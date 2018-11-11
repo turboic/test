@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.test.mapper.OrderDetailDAO">
+  <resultMap id="BaseResultMap" type="com.example.test.model.OrderDetail">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="price" jdbcType="VARCHAR" property="price" />
+    <result column="orderid" jdbcType="VARCHAR" property="orderid" />
+  </resultMap>
+
+  <!--第一种方式开始-->
+  <resultMap id="orderDetailAssociation" extends="BaseResultMap" type="com.example.test.model.OrderDetail">
+    <association property="order" select="getOrder" column="orderid" javaType="com.example.test.model.Order">
+      <!-- 这里要注意的是column对应的是student中的外键，而且需是表字段名 -->
+    </association>
+  </resultMap>
+
+  <!--定义列名-->
+  <sql id="Base_Column_List" >id,content,price,orderid</sql>
+  <select id="getOrderDetail1" resultMap="orderDetailAssociation" parameterType="java.lang.String">
+		SELECT <include refid="Base_Column_List" /> FROM orderdetail where id = #{id}
+  </select>
+
+  <select id="getOrder" resultType="com.example.test.model.Order" parameterType="java.lang.String">
+		SELECT
+			t.id,
+			t.name,
+			t.number
+		FROM orders t
+		where t.id = #{orderid}
+	</select>
+
+
+  <!--第一种方式结束-->
+
+  <!--第二种方式开始-->
+  <resultMap id="orderDetailAssociation2" extends="BaseResultMap" type="com.example.test.model.OrderDetail">
+    <association property="order" javaType="com.example.test.model.Order">
+      <result column="id" jdbcType="VARCHAR" property="id" />
+      <result column="number" jdbcType="VARCHAR" property="number" />
+      <result column="name" jdbcType="VARCHAR" property="name" />
+    </association>
+  </resultMap>
+
+  <select id="getOrderDetail2" resultMap="orderDetailAssociation2" parameterType="java.lang.String">
+    SELECT * FROM orderdetail o,orders t where o.orderid=t.id and o.id = #{id}
+  </select>
+  <!--第二种方式结束-->
+
+
+
+</mapper>

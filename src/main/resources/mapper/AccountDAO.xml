@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.test.mapper.AccountDAO">
+  <resultMap id="BaseResultMap" type="com.example.test.model.Account">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="accountName" jdbcType="VARCHAR" property="accountname" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+  </resultMap>
+
+  <!--插入数据-->
+  <insert id="insert" parameterType="com.example.test.model.Account">
+    insert into account (id,accountName, `password`)
+    values (#{id,jdbcType=VARCHAR},#{accountname,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR})
+  </insert>
+
+  <!--批量插入-->
+  <insert id="insertList" parameterType="java.util.List">
+    insert into account (id,accountName,password) values
+      <foreach collection="list" item="item" index="index" separator=",">
+        (
+          #{item.id,jdbcType=VARCHAR},
+          #{item.accountname,jdbcType=VARCHAR},
+          #{item.password,jdbcType=VARCHAR}
+        )
+      </foreach>
+  </insert>
+
+  <!--更新-->
+  <update id="update"  parameterType="com.example.test.model.Account">
+    update account
+    <trim prefix="set" suffixOverrides=",">
+      <if test="accountname!=null">accountname=#{accountname},</if>
+      <if test="password!=null">password=#{password},</if>
+    </trim>
+    WHERE id=#{id}
+  </update>
+
+  <update id="updateSet"  parameterType="com.example.test.model.Account">
+    update account
+    <set>
+      <if test="accountname!=null">accountname=#{accountname},</if>
+      <if test="password!=null">password=#{password},</if>
+    </set>
+    WHERE id=#{id}
+  </update>
+
+  <!--删除-->
+  <update id="delete"  parameterType="java.lang.String">
+    delete from account where id=#{id}
+  </update>
+
+  <!--定义列名-->
+  <sql id="Base_Column_List" >id,accountname,password</sql>
+
+  <!--根据主键Id查询-->
+  <select id="select" resultType="com.example.test.model.Account" parameterType="java.lang.String">
+    select <include refid="Base_Column_List" /> from account where id=#{id}
+  </select>
+
+
+  <!--如果否则查询-->
+  <select id="otherSelect" resultType="com.example.test.model.Account" parameterType="com.example.test.model.Account">
+    select <include refid="Base_Column_List" /> from account where
+    <choose>
+      <when test="accountname!= null">
+        accountname = #{accountname}
+      </when>
+      <otherwise>
+        password = #{password}
+      </otherwise>
+    </choose>
+  </select>
+
+  <!--动态SQL where查询-->
+  <select id="selectList" resultType="com.example.test.model.Account" parameterType="com.example.test.model.Account">
+    select <include refid="Base_Column_List" /> from account
+    <where>
+      <if test="id != null">
+        id = #{id}
+      </if>
+      <if test="accountname!= null">
+        or accountname = #{accountname}
+      </if>
+      <if test="password != null">
+        or password = #{password}
+      </if>
+    </where>
+  </select>
+
+  <!--等同上面的动态SQL where查询-->
+  <select id="selectList2" resultType="com.example.test.model.Account" parameterType="com.example.test.model.Account">
+    select <include refid="Base_Column_List" /> from account
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+      <if test="id != null">
+        id = #{id}
+      </if>
+      <if test="accountname!= null">
+        or accountname = #{accountname}
+      </if>
+      <if test="password != null">
+        or password = #{password}
+      </if>
+    </trim>
+  </select>
+
+  <!--批量删除-->
+  <delete id="deleteList" parameterType="java.util.List">
+    delete from account where id in
+    <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </delete>
+
+  <!--动态SQL插入-->
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.example.test.model.Account" useGeneratedKeys="true">
+    insert into account
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="accountname != null">
+        accountName,
+      </if>
+      <if test="password != null">
+        `password`,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="accountname != null">
+        #{accountname,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

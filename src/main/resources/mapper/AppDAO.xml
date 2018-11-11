@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.test.mapper.AppDAO">
+  <resultMap id="BaseResultMap" type="com.example.test.model.App">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="appName" jdbcType="VARCHAR" property="appname" />
+    <result column="company" jdbcType="VARCHAR" property="company" />
+    <result column="accountId" jdbcType="VARCHAR" property="accountid" />
+  </resultMap>
+  <!--插入数据-->
+  <insert id="insert" parameterType="com.example.test.model.App">
+    insert into app (id,appName, company, accountId
+      )
+    values (#{id,jdbcType=VARCHAR},#{appname,jdbcType=VARCHAR}, #{company,jdbcType=VARCHAR}, #{accountid,jdbcType=VARCHAR}
+      )
+  </insert>
+  <sql id="Base_Column_List">id,appname,company,accountid</sql>
+  <!--动态SQL where查询-->
+  <select id="select" resultType="com.example.test.model.App" parameterType="com.example.test.model.App">
+    select <include refid="Base_Column_List" /> from app
+    <where>
+      <if test="id != null">
+        and id = #{id}
+      </if>
+      <if test="appname!= null">
+        and appname = #{appname}
+      </if>
+      <if test="company != null">
+        and company = #{company}
+      </if>
+    </where>
+  </select>
+</mapper>

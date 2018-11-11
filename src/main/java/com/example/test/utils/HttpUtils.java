@@ -1,5 +1,7 @@
 package com.example.test.utils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -15,6 +17,7 @@ import javax.net.ssl.X509TrustManager;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -30,9 +33,14 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
 
     String ContentType= "application/x-www-form-urlencoded; charset=UTF-8";
     /**
@@ -60,6 +68,27 @@ public class HttpUtils {
         return httpClient.execute(request);
     }
 
+
+    public static String get(String uri)
+            throws Exception {
+        logger.info("内容:{}",uri);
+        HttpClient httpClient =  HttpClients.createDefault();
+        HttpGet request = new HttpGet(uri);
+        HttpResponse response = httpClient.execute(request);
+        HttpEntity entity = response.getEntity();
+        BufferedReader br = new BufferedReader(new InputStreamReader(entity.getContent()));
+        StringBuilder sb = new StringBuilder();
+        String content;
+        while((content = br.readLine())!=null){
+            logger.info("内容:{}",content);
+            sb.append(content);
+        }
+        if(br !=null){
+            br.close();
+        }
+        return sb.toString();
+    }
+
     /**
      * post form
      *
@@ -73,9 +102,9 @@ public class HttpUtils {
      * @throws Exception
      */
     public static HttpResponse doPost(String host, String path, String method,
-                                      Map<String, String> headers,
-                                      Map<String, String> querys,
-                                      Map<String, String> bodys)
+                                       Map<String, String> headers,
+                                       Map<String, String> querys,
+                                       Map<String, String> bodys)
             throws Exception {
         HttpClient httpClient = wrapClient(host);
 
@@ -96,6 +125,11 @@ public class HttpUtils {
         }
 
         return httpClient.execute(request);
+    }
+
+
+    public static HttpResponse executePost(String host,Map<String, String> headers,Map<String, String> bodys)throws Exception {
+        return doPost(host,null,"post",headers,null,bodys);
     }
 
     /**
